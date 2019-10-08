@@ -1,0 +1,3 @@
+document_routes:
+    resource: "@DocumentBundle/Resources/routing/document.yml"
+    prefix:   document/

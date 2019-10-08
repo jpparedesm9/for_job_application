@@ -1,0 +1,6 @@
+<select id="{{cmbname}}" name="{{cmbname}}{%if is_multiple%}[]{%endif%}" {%if is_multiple%}multiple='multiple'{%endif%} class='form-control js-multiple required'>
+<option value=""></option>
+{%for user in users%}
+<option value="{{user.id}}" {{site_methods.verifyUserinArray(user.id,selected_users)}}>{{user.lastname}} {{user.name}}</option>
+{%endfor%}
+</select>

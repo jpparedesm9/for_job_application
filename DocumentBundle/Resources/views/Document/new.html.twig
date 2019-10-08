@@ -1,0 +1,447 @@
+{% extends "::base.html.twig" %}
+{%block customcss%}
+<link href="{{asset('assets/select2/css/select2-bootstrap.css')}}" />
+<link href="{{asset('assets/select2/css/select2.min.css')}}" rel="stylesheet" />
+<link rel="stylesheet" href="{{asset('assets/node_modules/html5-editor/bootstrap-wysihtml5.css')}}" />
+<link href="{{asset('dist/css/pages/stylish-tooltip.css')}}" rel="stylesheet">
+<link href="{{asset('dist/css/style.min.css')}}" rel="stylesheet">
+<style type="text/css">
+.error{
+color:red;
+}
+.bold {
+    font-weight:bold;
+}
+.block {
+    display:block;
+}
+label.myErrorClass {
+    color: red;
+    font-size: 11px;
+    display: block;
+}
+ul.myErrorClass input {
+    color: #666 !important;
+}
+ul.myErrorClass, input.myErrorClass, textarea.myErrorClass, select.myErrorClass {
+    border-width: 1px !important;
+    border-style: solid !important;
+    border-color: #cc0000 !important;
+    background-color: #f3d8d8 !important;
+    background-position: 50% 50% !important;
+    background-repeat: repeat !important;
+    background-image: url(http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.2/themes/blitzer/images/ui-bg_diagonals-thick_75_f3d8d8_40x40.png) !important;
+}
+</style>
+{%endblock%}
+{%block customjs%}
+<script src="{{asset('assets/js/jquery.validate.min.js')}}"></script>
+<script src="{{asset('assets/js/reasignation.js')}}"></script>
+<script src="{{asset('assets/node_modules/popper/popper.min.js')}}"></script>
+<script src="{{asset('assets/node_modules/bootstrap/dist/js/bootstrap.min.js')}}"></script>
+<script src="{{asset('assets/node_modules/tinymce/tinymce.min.js')}}"></script>
+<script src="{{asset('assets/select2/js/select2.min.js')}}"></script>
+<script type="text/JavaScript">
+  var last_selected="0";
+  var confirmed_btn=1;
+  function insert_contents(inst){
+      inst.setContent('{{site_methods.decodeChars(document.content)|raw}}');
+  }
+  function updateFromBox()
+  {
+      var selected_value=$("#from").val();
+      console.log("enabling "+last_selected.toString());
+      console.log("disabling "+selected_value.toString());
+      $('#to option[value="'+last_selected+'"]').removeAttr('disabled');
+      $('#to option[value="'+selected_value.toString()+'"]').attr("disabled","disabled");
+      $('#to option[value="'+selected_value.toString()+'"]').prop("selected", false);
+      $("#to").select2();
+      last_selected=selected_value;
+  }
+  function saveDocument()
+  {
+      var frmvalid = $("#document_frm").valid();
+      $("#raw_content").val(tinymce.activeEditor.getContent({format : 'raw'}));
+      if (frmvalid) {
+          $("#processing_message").show();
+          $("#success_message").hide();
+          $("#error_message").hide();
+          var form_data = $('#document_frm').serializeArray();
+          $.ajax({
+              type: "POST",
+              url: "{{path('save_document')}}",
+              data: form_data,
+              success: function(data) {
+                    if (data.event=="success")
+                    {
+                    if (data.owner==1)
+                    {
+                    $("#verify_and_confirm_btn").attr("disabled", false);
+                    confirmed_btn=1;
+                    }
+                    else{
+                    $("#verify_and_confirm_btn").attr("disabled", true);
+                    confirmed_btn=0;
+                    }
+
+                    $('#success_message').fadeIn().html(data.msg);
+                      setTimeout(function() {
+              				$('#success_message').fadeOut("slow");
+              				}, 2000 );
+                    }
+                    else {
+                      $("#error_message").fadeIn().html(data.msg);
+                    }
+                    $("#processing_message").hide();
+              }
+            });
+      }
+      return true;
+  }
+
+
+
+    /*********Start Text Edition Initialization******/
+    if ($("#mymce").length > 0) {
+        tinymce.init({
+            selector: "textarea#mymce",
+            theme: "modern",
+            height: 300,
+            init_instance_callback: "insert_contents",
+            plugins: [
+                "advlist autolink link lists charmap hr anchor pagebreak spellchecker",
+                "searchreplace wordcount visualblocks visualchars code fullscreen insertdatetime nonbreaking",
+                "save table contextmenu directionality emoticons template paste textcolor"
+            ],
+            toolbar: "insertfile undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | l      ink image | print preview media fullpage | forecolor backcolor emoticons",
+
+        });
+    }
+    /**************End Text Edition******************/
+    function reasignCallback(document_ids)
+    {
+      var start = new Date().getTime();
+      var end = start;
+      while(end < start + 5000) {
+        end = new Date().getTime();
+      }
+      $(location).delay(5000).attr('href', '{{path('show_tray',{'tray':'ellaboration'})}}');
+    }
+    function startReasignationFunction(){
+        var reasignationObj=new Reasignation();
+        var tray="ellaboration";
+        var document_ids=[{{document.id}}];
+        var url="{{path('reasign_document')}}";
+        reasignationObj.init(url,tray,document_ids,reasignCallback,"reasign_btn");
+        reasignationObj.startReasignation();
+    };
+
+    $(document).ready(function () {
+        updateFromBox();
+        $("#submit_reasign_btn").click(function(){
+            startReasignationFunction();
+        });
+
+        $("#reasign_btn").click(function(){
+           $("#reasign_frm").trigger("reset");
+           $("#reasign_box_msg_1").show();
+           $("#reasign_box_msg_2").show();
+           $("#success_reasignation").hide();
+           $('#reasign_modal').modal('show');
+        });
+
+        $('#from').on('select2:select', function (e) {
+            updateFromBox();
+          });
+        /**********Verify and Confirm**********/
+        $("#verify_and_confirm_btn").click(function(){
+            saveDocument();
+            if (confirmed_btn==1){
+            $(location).attr('href', '{{path('verify_and_confirm',{'documentId':document.id})}}');
+            }
+        });
+        /**********End Verify and Confirm**********/
+        $("#preview_btn").click(function()
+        {
+            var document_url="{{path('show_document_preview',{'documentId':document.id})}}";
+            var frmvalid = $("#document_frm").valid();
+            if (frmvalid) {
+              saveDocument();
+              $('#preview_window').modal('show');
+              $("#div_pdf_preview").hide();
+              $("#pdf_loader").show();
+              $('#pdfpreview').attr("src",document_url);
+              $('#pdfpreview').on("load", function() {
+                    $("#pdf_loader").hide();
+                    $("#div_pdf_preview").show();
+              });
+            }
+        });
+
+        $("#save_btn").click(function(){
+            saveDocument();
+        });
+
+
+
+        //Transforms the listbox visually into a Select2.
+        $('.js-multiple').select2({width: '100%'});
+
+        //Initialize the validation object which will be called on form submit.
+        var validobj = $('#document_frm').validate({
+            rules: {
+                document_title:{
+                required: true
+                }
+              },
+              messages: {
+                date: {
+                document_title: "Campo Requerido"
+                }
+              },
+
+            onkeyup: false,
+            errorClass: 'myErrorClass',
+
+            //put error message behind each form element
+            errorPlacement: function (error, element) {
+                var elem = $(element);
+                error.insertAfter(element);
+            },
+
+            //When there is an error normally you just add the class to the element.
+            // But in the case of select2s you must add it to a UL to make it visible.
+            // The select element, which would otherwise get the class, is hidden from
+            // view.
+            highlight: function (element, errorClass, validClass) {
+                var elem = $(element);
+                if (elem.hasClass('select2-offscreen')) {
+                    $('#s2id_' + elem.attr('id') + ' ul').addClass(errorClass);
+                } else {
+                    elem.addClass(errorClass);
+                }
+            },
+
+            //When removing make the same adjustments as when adding
+            unhighlight: function (element, errorClass, validClass) {
+                var elem = $(element);
+                if (elem.hasClass('select2-offscreen')) {
+                    $('#s2id_' + elem.attr('id') + ' ul').removeClass(errorClass);
+                } else {
+                    elem.removeClass(errorClass);
+                }
+            }
+        });
+
+        //If the change event fires we want to see if the form validates.
+        //But we don't want to check before the form has been submitted by the user
+        //initially.
+        $(document).on('change', '.select2-offscreen', function () {
+            if (!$.isEmptyObject(validobj.submitted)) {
+                validobj.form();
+            }
+        });
+
+        //A select2 visually resembles a textbox and a dropdown.  A textbox when
+        //unselected (or searching) and a dropdown when selecting. This code makes
+        //the dropdown portion reflect an error if the textbox portion has the
+        //error class. If no error then it cleans itself up.
+        $(document).on('select2-opening', function (arg) {
+            var elem = $(arg.target);
+            if ($('#s2id_' + elem.attr('id') + ' ul').hasClass('myErrorClass')) {
+                 //jquery checks if the class exists before adding.
+                $('.select2-drop ul').addClass('myErrorClass');
+            } else {
+                $('.select2-drop ul').removeClass('myErrorClass');
+            }
+        });
+    });
+
+
+</script>
+{%endblock%}
+{%block body%}
+<form id="document_frm">
+<input type="hidden" id="raw_content" name="raw_content" />
+<input type="hidden" id="document_id" name="document_id" value="{{document.id}}"/>
+<div class="container-fluid">
+    <!-- ============================================================== -->
+    <!-- Bread crumb and right sidebar toggle -->
+    <!-- ============================================================== -->
+    <div class="row page-titles">
+        <div class="col-md-12 align-self-center text-left">
+          <div class="btn-group" role="group" aria-label="Basic example">
+              <button type="button" class="btn btn-success" title="Guardar" data-toggle="tooltip" id="save_btn"><i class="fa fa-save"></i></button>
+              <button type="button" class="btn btn-success" title="Vista Previa" data-toggle="tooltip" id="preview_btn"><i class="fa fa-eye"></i></button>
+              <button type="button" class="btn btn-success" title="Verificar y Confirmar" id="verify_and_confirm_btn" data-toggle="tooltip"><i class="fa fa-arrow-right"></i></button>
+              <button id="reasign_btn" type="button" class="btn btn-success" title="Reasignar" data-toggle="tooltip"><i class="fa fa-exchange-alt"></i></button>
+              <div id="processing_message" style="display:none;"><img src="{{asset('assets/images/loader.gif')}}" /> <span style="color:green;">Guardando Documento...</span></div>
+              &nbsp;&nbsp;&nbsp;
+              <div id="success_message" style="display:none; color:green;">mensaje exitoso</div>
+              <div id="error_message" style="display:none; color:red;">error</div>
+          </div>
+
+        </div>
+    </div>
+    <!-- ============================================================== -->
+    <!-- End Bread crumb and right sidebar toggle -->
+    <!-- ============================================================== -->
+
+    <div class="row">
+    <!-- Column -->
+    <div class="col-md-12 col-lg-12">
+        <div class="card">
+        <ul class="nav nav-tabs" id="myTab" role="tablist">
+           <li class="nav-item">
+              <a class="nav-link active" id="home-tab" data-toggle="tab" href="#home" role="tab" aria-controls="home" aria-selected="true">Edici&oacute;n</a>
+           </li>
+           <li class="nav-item">
+              <a class="nav-link" id="profile-tab" data-toggle="tab" href="#profile" role="tab" aria-controls="profile" aria-selected="false">Adjuntos</a>
+           </li>
+        </ul>
+
+
+        <div class="tab-content" id="myTabContent">
+           <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
+           <!--Document Edition-->
+           <div class="form-group" style="margin-left:20px; margin-right:20px;">
+               <!--Necessary lines to show the editor-->
+               <div class="row">
+                   <div class="col-md-6">
+                     <div class="form-group">
+                     <label class="control-label">De:</label>
+                     {{site_methods.showSelectedUsersCmb(document.fromuser,"from",false)|raw}}
+                     </div>
+                   </div>
+                   <div class="col-md-3">
+                       <div class="form-group">
+                           <label class="control-label">Fecha</label>
+                           <input type="date" class="form-control" id="fecha" name="fecha" value="{% if doc is not null and doc is defined %}{{ doc.docFecha|date("Y-m-d")}} {%else%}{{ "now"|date("Y-m-d") }}{%endif%}" />
+                       </div>
+                   </div>
+                   <div class="col-md-3">
+                       <div class="form-group row">
+                           <label class="control-label">Versi&oacute;n</label>
+                           <select class="form-control custom-select">
+                               <option value="">2017/12/11</option>
+                               <option value="">2017/12/11</option>
+                               <option value="">2017/12/11</option>
+                           </select>
+                       </div>
+                   </div>
+               </div>
+               <div class="row">
+                   <div class="col-md-6">
+                     <div class="form-group">
+                     <label class="control-label">Para:</label>
+                     {{site_methods.showSelectedUsersCmb(document.touser,"to")|raw}}
+
+                   </div>
+                   </div>
+                   <div class="col-md-6">
+                       <div class="form-group">
+                           <label class="control-label">Categor&iacute;a</label>
+                           <select class="form-control custom-select">
+                               <option value="">Normal</option>
+                               <option value="">Reservado</option>
+                               <option value="">Urgente</option>
+                           </select>
+                       </div>
+                   </div>
+
+               </div>
+               <div class="row">
+                   <div class="col-md-6">
+                     <div class="form-group">
+                     <label class="control-label">Copia:</label>
+                     {{site_methods.showSelectedUsersCmb(document.copyto,"copy")|raw}}
+                   </div>
+                   </div>
+                   <div class="col-md-6">
+                       <div class="form-group">
+                           <label class="control-label">Asunto</label>
+                            <input id="document_title" value="{{document.subject}}" name="subject" id="subject" class="form-control">
+                       </div>
+                   </div>
+
+               </div>
+                 <textarea id="mymce" name="area"></textarea>
+               <!--End necessary lines to show the editor-->
+           </div>
+          <!-- End Document Edition -->
+            </div>
+
+            <div class="tab-pane fade show" id="profile" role="tabpanel" aria-labelledby="home-tab">
+            <!--hola-->
+            </div>
+
+
+        </div>
+
+
+
+
+
+
+        </div>
+    </div>
+
+    <!-- Column -->
+    </div>
+</div>
+</form>
+
+<form id="preview_frm">
+<div class="modal fade" id="preview_window" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel1">
+    <div class="modal-dialog" role="document" style="width: 70%; max-width: 100%;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="exampleModalLabel1">Vista Previa</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            </div>
+            <div class="modal-body">
+                <div id="div_pdf_preview" style="display:none;">
+                <iframe id="pdfpreview" src="http://google.com"
+                style="width:100%; height:500px;" frameborder="0"></iframe>
+                </div>
+                <div id="pdf_loader" style="display:none; color:green;">
+                <img src="{{asset('assets/images/loader.gif')}}" /> Cargando Documento...
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+</form>
+<div class="modal fade" id="reasign_modal" role="dialog" aria-labelledby="exampleModalLabel1">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="exampleModalLabel1">Reasignar Documento</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            </div>
+            <div class="modal-body">
+                <form id="reasign_frm">
+                  <div id="success_reasignation" style="display:none;">
+                  Su documento ha sido reasignado de manera exitosa.
+                  </div>
+                    <div class="form-group" id="reasign_box_msg_1">
+                        <label for="recipient-name" class="control-label">Persona a reasignar:</label>
+                        {{site_methods.showSelectedUsersCmb("","reasign_to",false)|raw}}
+                    </div>
+                    <div class="form-group" id="reasign_box_msg_2">
+                        <label for="message-text" class="control-label">Mensaje:</label>
+                        <textarea class="form-control" id="reasign_msg" name="reasign_msg"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
+                <button id="submit_reasign_btn" type="button" class="btn btn-primary">Reasignar</button>
+            </div>
+        </div>
+    </div>
+</div>
+{%endblock%}

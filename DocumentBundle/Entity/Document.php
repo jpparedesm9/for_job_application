@@ -1,0 +1,358 @@
+<?php
+
+namespace DocumentBundle\Entity;
+
+use Doctrine\ORM\Mapping as ORM;
+
+/**
+ * Document
+ *
+ * @ORM\Table(name="document")
+ * @ORM\Entity(repositoryClass="DocumentBundle\Repository\DocumentRepository")
+ */
+class Document
+{
+    /**
+     * @var int
+     *
+     * @ORM\Column(name="id", type="integer")
+     * @ORM\Id
+     * @ORM\GeneratedValue(strategy="AUTO")
+     */
+    private $id;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="fromUser", type="string", length=255, nullable=true)
+     */
+    private $fromUser;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="path", type="string", length=255, nullable=true)
+     */
+    private $path;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="toUser", type="string", length=255, nullable=true)
+     */
+    private $toUser;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="copyTo", type="string", length=255, nullable=true)
+     */
+    private $copyTo;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="content", type="text", nullable=true)
+     */
+    private $content;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="subject", type="string", length=255, nullable=true)
+     */
+    private $subject;
+
+    /**
+    * @ORM\ManyToOne(targetEntity="SiteConfigurationBundle\Entity\User")
+    */
+    private $user;
+
+    /**
+     * @ORM\OneToMany(targetEntity="DocumentBundle\Entity\History", mappedBy="document")
+     */
+    private $histories;
+
+    /**
+     * @ORM\Column(name="sent", type="boolean")
+     */
+    private $sent = false;
+
+    /**
+     * @var \DateTime
+     *
+     * @ORM\Column(name="generated_day", type="datetime")
+     */
+    private $generatedDay;
+
+
+
+    /**
+     * Get id.
+     *
+     * @return int
+     */
+    public function getId()
+    {
+        return $this->id;
+    }
+
+    /**
+     * Set toUser.
+     *
+     * @param string $toUser
+     *
+     * @return Document
+     */
+    public function setToUser($toUser)
+    {
+        $this->toUser = $toUser;
+
+        return $this;
+    }
+
+    /**
+     * Get toUser.
+     *
+     * @return string
+     */
+    public function getToUser()
+    {
+        return $this->toUser;
+    }
+
+    /**
+     * Set copyTo.
+     *
+     * @param string $copyTo
+     *
+     * @return Document
+     */
+    public function setCopyTo($copyTo)
+    {
+        $this->copyTo = $copyTo;
+
+        return $this;
+    }
+
+    /**
+     * Get copyTo.
+     *
+     * @return string
+     */
+    public function getCopyTo()
+    {
+        return $this->copyTo;
+    }
+
+    /**
+     * Set content.
+     *
+     * @param string $content
+     *
+     * @return Document
+     */
+    public function setContent($content)
+    {
+        $this->content = $content;
+
+        return $this;
+    }
+
+    /**
+     * Get content.
+     *
+     * @return string
+     */
+    public function getContent()
+    {
+        return $this->content;
+    }
+
+    /**
+     * Set subject.
+     *
+     * @param string $subject
+     *
+     * @return Document
+     */
+    public function setSubject($subject)
+    {
+        $this->subject = $subject;
+
+        return $this;
+    }
+
+    /**
+     * Get subject.
+     *
+     * @return string
+     */
+    public function getSubject()
+    {
+        return $this->subject;
+    }
+
+    /**
+     * Set user.
+     *
+     * @param \SiteConfigurationBundle\Entity\User|null $user
+     *
+     * @return Document
+     */
+    public function setUser(\SiteConfigurationBundle\Entity\User $user = null)
+    {
+        $this->user = $user;
+
+        return $this;
+    }
+
+    /**
+     * Get user.
+     *
+     * @return \SiteConfigurationBundle\Entity\User|null
+     */
+    public function getUser()
+    {
+        return $this->user;
+    }
+
+    /**
+     * Set fromUser.
+     *
+     * @param string|null $fromUser
+     *
+     * @return Document
+     */
+    public function setFromUser($fromUser = null)
+    {
+        $this->fromUser = $fromUser;
+
+        return $this;
+    }
+
+    /**
+     * Get fromUser.
+     *
+     * @return string|null
+     */
+    public function getFromUser()
+    {
+        return $this->fromUser;
+    }
+
+    /**
+     * Set sent.
+     *
+     * @param bool $sent
+     *
+     * @return Document
+     */
+    public function setSent($sent)
+    {
+        $this->sent = $sent;
+
+        return $this;
+    }
+
+    /**
+     * Get sent.
+     *
+     * @return bool
+     */
+    public function getSent()
+    {
+        return $this->sent;
+    }
+    /**
+     * Constructor
+     */
+    public function __construct()
+    {
+        $this->histories = new \Doctrine\Common\Collections\ArrayCollection();
+    }
+
+    /**
+     * Add history.
+     *
+     * @param \DocumentBundle\Entity\History $history
+     *
+     * @return Document
+     */
+    public function addHistory(\DocumentBundle\Entity\History $history)
+    {
+        $this->histories[] = $history;
+
+        return $this;
+    }
+
+    /**
+     * Remove history.
+     *
+     * @param \DocumentBundle\Entity\History $history
+     *
+     * @return boolean TRUE if this collection contained the specified element, FALSE otherwise.
+     */
+    public function removeHistory(\DocumentBundle\Entity\History $history)
+    {
+        return $this->histories->removeElement($history);
+    }
+
+    /**
+     * Get histories.
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getHistories()
+    {
+        return $this->histories;
+    }
+
+    /**
+     * Set path.
+     *
+     * @param string|null $path
+     *
+     * @return Document
+     */
+    public function setPath($path = null)
+    {
+        $this->path = $path;
+
+        return $this;
+    }
+
+    /**
+     * Get path.
+     *
+     * @return string|null
+     */
+    public function getPath()
+    {
+        return $this->path;
+    }
+
+    /**
+     * Set generatedDay.
+     *
+     * @param \DateTime $generatedDay
+     *
+     * @return Document
+     */
+    public function setGeneratedDay($generatedDay)
+    {
+        $this->generatedDay = $generatedDay;
+
+        return $this;
+    }
+
+    /**
+     * Get generatedDay.
+     *
+     * @return \DateTime
+     */
+    public function getGeneratedDay()
+    {
+        return $this->generatedDay;
+    }
+}

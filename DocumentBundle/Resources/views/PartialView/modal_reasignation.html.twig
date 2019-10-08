@@ -1,0 +1,35 @@
+<div class="modal fade" id="reasign_modal" role="dialog" aria-labelledby="exampleModalLabel1">
+<input type="hidden" name="action_type" id="action_type" value="" />
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div id="reasign_title">
+                <h4 class="modal-title" id="exampleModalLabel1">Reasignar Documento</h4>
+                </div>
+                <div id="inform_title" style="display:none;">
+                <h4 class="modal-title" id="exampleModalLabel1">Informar</h4>
+                </div>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            </div>
+            <div class="modal-body">
+                <form id="reasign_frm">
+                  <div id="success_reasignation" style="display:none;">
+                  Su documento ha sido reasignado de manera exitosa.
+                  </div>
+                    <div class="form-group" id="reasign_box_msg_1">
+                        <label for="recipient-name" class="control-label">Escoja una persona de la lista:</label>
+                        {{site_methods.showSelectedUsersCmb("","reasign_to",false)|raw}}
+                    </div>
+                    <div class="form-group" id="reasign_box_msg_2">
+                        <label for="message-text" class="control-label">Mensaje:</label>
+                        <textarea class="form-control" id="reasign_msg" name="reasign_msg"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
+                <button id="submit_reasign_btn" type="button" class="btn btn-primary">Aceptar</button>
+            </div>
+        </div>
+    </div>
+</div>

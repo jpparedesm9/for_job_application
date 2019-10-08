@@ -1,0 +1,111 @@
+{% extends "::base.html.twig" %}
+{%block customjs%}
+<script type="text/JavaScript">
+$(document).ready(function(){
+    $("#return_btn").click(function(){
+        $(location).attr('href', '{{url}}');
+    });
+    $("#copy_from").click(function(){
+    $(location).attr('href', '{{path('get_document',{'copyFrom':documentId})}}');
+    });
+    $("#respond_to").click(function(){
+    $(location).attr('href', '{{path('get_document',{'copyFrom':documentId,'respond':1})}}');
+    });
+});
+</script>
+{%endblock%}
+{%block body%}
+<div class="container-fluid">
+
+
+
+
+    <!-- ============================================================== -->
+    <!-- Bread crumb and right sidebar toggle -->
+    <!-- ============================================================== -->
+    <div class="row page-titles">
+        <div class="col-md-12 align-self-center text-left">
+
+
+        <!-- Tools for Inbox -->
+        <div class="card-body" style="padding-bottom: 0px;">
+            <div class="btn-group m-b-10 m-r-10" role="group" aria-label="Button group with nested dropdown">
+                <button id="return_btn" type="button" data-toggle="tooltip" title="Regresar" class="btn btn-secondary font-18"><i class="mdi mdi-keyboard-return"></i> Regresar</button>
+                <button id="copy_from" type="button" data-toggle="tooltip" title="Copiar contenido" class="btn btn-secondary font-18"><i class="mdi mdi-content-copy"></i> Copiar</button>
+                <button id="respond_to" type="button" data-toggle="tooltip" title="Responder" class="btn btn-secondary font-18"><i class="mdi mdi-undo-variant"></i> Responder</button>
+            </div>
+        </div>
+        <!-- End Tools -->
+          <div id="processing" style="display:none; color:green;"><img src="{{asset('assets/images/loader.gif')}}" /> Enviando Documento. Por favor espere un momento ...</div>
+          <div id="error_message" style="display:none; color:red;"></div>
+        </div>
+    </div>
+    <!-- ============================================================== -->
+    <!-- End Bread crumb and right sidebar toggle -->
+    <!-- ============================================================== -->
+        <ul class="nav nav-tabs" id="myTab" role="tablist">
+           <li class="nav-item">
+              <a class="nav-link active" id="document-tab" data-toggle="tab" href="#document" role="tab" aria-controls="home" aria-selected="true">Documento</a>
+           </li>
+           <li class="nav-item">
+              <a class="nav-link" id="anexes-tab" data-toggle="tab" href="#anexes" role="tab" aria-controls="profile" aria-selected="false">Anexos</a>
+           </li>
+           <li class="nav-item">
+              <a class="nav-link" id="history-tab" data-toggle="tab" href="#history" role="tab" aria-controls="profile" aria-selected="false">Recorrido</a>
+           </li>
+        </ul>
+        <div class="tab-content" id="myTabContent">
+           <div class="tab-pane fade show active" id="document" role="tabpanel" aria-labelledby="document-tab">
+              <div class="row">
+                  <div class="col-12">
+                      <div class="card">
+                          <div class="card-body">
+                            <iframe id="pdfpreview" src="{{path('extract_saved_document_from_disk',{'documentId':documentId,'trayId':trayId})}}" style="width:100%; height:500px;" frameborder="0"></iframe>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+           </div>
+           <div class="tab-pane fade show" id="anexes" role="tabpanel" aria-labelledby="anexes-tab">
+              <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                    Anexos
+                    </div>
+                </div>
+              </div>
+           </div>
+           <div class="tab-pane fade show" id="history" role="tabpanel" aria-labelledby="history-tab">
+              <div class="row">
+                  <div class="col-12">
+                      <div class="card">
+                          <div class="card-body">
+                          <div class="profiletimeline">
+                              {%for history in document.histories%}
+                                {% set path=history.user.image %}
+                                <div class="sl-item">
+                                    <div class="sl-left">
+                                    <img src="{% if path is not empty %}
+                                    {{aws_bucket_name}}/100x100/{{path}}
+                                    {%else%}
+                                    {{asset('assets/images/users/user.png')}}
+                                    {%endif%}" alt="user" class="img-circle" /> </div>
+                                    <div class="sl-right">
+                                        <div><a href="javascript:void(0)" class="link">{{history.user.name}} {{history.user.lastname}}</a> <span class="sl-date">{{ history.actiondate|date('Y-m-d H:i:s') }}</span>
+                                            <blockquote class="m-t-10">
+                                                {{history.comment}}
+                                            </blockquote>
+                                        </div>
+                                    </div>
+                                </div>
+                                <hr>
+                              {%endfor%}
+                          </div>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+           </div>
+        </div>
+</div>
+{%endblock%}

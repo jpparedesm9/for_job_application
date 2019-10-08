@@ -1,0 +1,69 @@
+get_document:
+    path: /get_document/{documentId}/{copyFrom}/{respond}
+    defaults: { _controller: "DocumentBundle:Document:getDocument" , documentId:0, copyFrom:0, respond:0}
+    methods:  [GET]
+
+save_document:
+    path: /save_document
+    defaults: { _controller: "DocumentBundle:Document:saveDocument"}
+    methods:  [POST]
+
+reasign_document:
+    path: /reasign_document
+    defaults: { _controller: "DocumentBundle:Document:reasignDocument"}
+    methods:  [POST]
+
+show_document_preview:
+    path: /show_document_preview/{documentId}
+    defaults: { _controller: "DocumentBundle:Document:showDocumentPreview", documentId:0}
+    methods:  [GET]
+
+show_tray:
+    path: /show_tray/{tray}
+    defaults: { _controller: "DocumentBundle:Document:showTray"}
+    methods:  [GET]
+
+show_inbox:
+    path: /show_inbox
+    defaults: { _controller: "DocumentBundle:Document:showInbox"}
+    methods:  [GET]
+
+show_sent_document:
+    path: /show_sent_document
+    defaults: { _controller: "DocumentBundle:Document:showSentDocument"}
+    methods:  [GET]
+
+show_ellaboration:
+    path: /show_ellaboration
+    defaults: { _controller: "DocumentBundle:Document:showEllaboration"}
+    methods:  [GET]
+
+remove_document:
+    path: /remove_document
+    defaults: { _controller: "DocumentBundle:Document:removeDocument"}
+    methods:  [POST]
+
+remove_multiple_documents:
+    path: /remove_multiple_documents
+    defaults: { _controller: "DocumentBundle:Document:removeMultipleDocuments"}
+    methods:  [POST]
+
+verify_and_confirm:
+    path: /verify_and_confirm/{documentId}
+    defaults: { _controller: "DocumentBundle:Document:verifyAndConfirm"}
+    methods:  [GET]
+
+send_document:
+    path: /send_document
+    defaults: { _controller: "DocumentBundle:Document:sendDocument"}
+    methods:  [POST]
+
+show_saved_document:
+    path: /show_saved_document/{documentId}/{trayId}/
+    defaults: { _controller: "DocumentBundle:Document:showSavedDocument"}
+    methods:  [GET]
+
+extract_saved_document_from_disk:
+    path: /extract_saved_document_from_disk/{documentId}/{trayId}
+    defaults: { _controller: "DocumentBundle:Document:extractSavedDocumentFromDisk"}
+    methods:  [GET]

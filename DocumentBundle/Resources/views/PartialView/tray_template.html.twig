@@ -1,0 +1,228 @@
+{% extends "::base.html.twig" %}
+{%block customcss%}
+<link href="{{asset('assets/node_modules/datatables/media/css/dataTables.bootstrap4.css')}}" rel="stylesheet">
+<link href="{{asset('assets/select2/css/select2-bootstrap.css')}}" />
+<link href="{{asset('assets/select2/css/select2.min.css')}}" rel="stylesheet" />
+{%endblock%}
+{%block customjs%}
+<script src="{{asset('assets/js/jquery.validate.min.js')}}"></script>
+<script src="{{asset('assets/js/reasignation.js')}}"></script>
+<script src="{{asset('assets/js/document_removal.js')}}"></script>
+<script src="{{asset('assets/js/multiple_document_removal.js')}}"></script>
+<script src="{{asset('assets/node_modules/datatables/datatables.min.js')}}"></script>
+<script src="{{asset('assets/select2/js/select2.min.js')}}"></script>
+<!-- start - This is for export functionality only -->
+<script src="https://cdn.datatables.net/buttons/1.5.1/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/1.5.1/js/buttons.flash.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.32/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.32/vfs_fonts.js"></script>
+<script src="https://cdn.datatables.net/buttons/1.5.1/js/buttons.html5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/1.5.1/js/buttons.print.min.js"></script>
+<script type="text/JavaScript">
+$('#example23').DataTable({
+    dom: 'frtip',
+    buttons: [
+        'copy', 'csv', 'excel', 'pdf', 'print'
+    ]
+});
+$('.buttons-copy, .buttons-csv, .buttons-print, .buttons-pdf, .buttons-excel').addClass('btn btn-primary mr-1');
+function reasignCallback(document_ids)
+{
+    $.each(document_ids, function( index, value ) {
+        $("#row_"+value.toString()).fadeOut(100, function(){
+              $(this).remove();
+        });
+        $('#reasign_modal').modal('hide');
+        $('#archive_modal').modal('hide');
+    });
+}
+
+function startReasignationFunction(){
+    var reasignationObj=new Reasignation();
+    var tray="{{tray}}";
+    var action_type= $("#action_type").val();
+    var document_ids=[];
+    $.each($("input[name='to_delete_chk']:checked"), function(){
+        document_ids.push($(this).val());
+    });
+    var url="{{path('reasign_document')}}";
+    reasignationObj.init(url,tray,document_ids,reasignCallback,action_type);
+    reasignationObj.startReasignation();
+};
+
+$(document).ready(function(){
+/************Code to reasign documents***********/
+
+$('.js-multiple').select2({width: '100%'});
+
+$("#archive_btn").click(function(){
+   $('#archive_modal').modal('show');
+   $("#action_type").val("archive_btn");
+});
+$("#submit_archive_btn").click(function(){
+    startReasignationFunction();
+});
+
+$("#reasign_btn,#inform_btn").click(function(){
+   var btn_name=$(this).attr('id');
+   if(btn_name=="inform_btn")
+   {
+      $("#inform_title").show();
+      $("#reasign_title").hide();
+   }
+   else
+   {
+       $("#reasign_title").show();
+       $("#inform_title").hide();
+   }
+   $("#action_type").val(btn_name);
+   $("#reasign_frm").trigger("reset");
+   $("#reasign_box_msg_1").show();
+   $("#reasign_box_msg_2").show();
+   $("#success_reasignation").hide();
+   $('#reasign_modal').modal('show');
+
+});
+
+$("#submit_reasign_btn").click(function(){
+    startReasignationFunction();
+});
+
+/********End Code to reasign documents**********/
+
+
+
+/********Necessary row to remove document***********/
+removalObj= new RemoveRow();
+var selector=".delete-row-btn";
+var url_processor="{{path('remove_document')}}";
+var tray="inbox";
+removalObj.init(selector,url_processor,tray);
+/************End document Removal*******************/
+
+    $("#delete_btn_tbox").click(function()
+    {
+        $('#confirm_deletion_modal').modal('show');
+    });
+
+    $("#confirm_deletion_btn").click(function()
+    {
+        $('#confirm_deletion_modal').modal('hide');
+        /***************Multiple Row Removal***************/
+        multipleRemovalObj= new MultipleRowRemoval();
+        var selector="to_delete_chk";
+        var url_processor="{{path('remove_multiple_documents')}}";
+        var tray="{{tray}}";
+        multipleRemovalObj.init(selector,url_processor,tray);
+        multipleRemovalObj.remove();
+        /************End Multiple Row Removal***************/
+    });
+
+});
+
+</script>
+{%endblock%}
+
+{%block body%}
+<div class="container-fluid">
+    <!-- ============================================================== -->
+    <!-- Bread crumb and right sidebar toggle -->
+    <!-- ============================================================== -->
+    <div class="row page-titles">
+        <div class="col-md-12 align-self-center text-left">
+            <div class="d-flex justify-content-end align-items-center">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{path('dashboard_home_page')}}">Dashboard</a></li>
+                    <li class="breadcrumb-item active">{{breadcrumb|raw}}</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+    <!-- ============================================================== -->
+    <!-- End Bread crumb and right sidebar toggle -->
+    <!-- ============================================================== -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <!-- Tools for Inbox -->
+                    <div class="card-body" style="padding-bottom: 0px;">
+                        <div class="btn-group m-b-10 m-r-10" role="group" aria-label="Button group with nested dropdown">
+                            <button type="button" id="delete_btn_tbox" class="btn btn-secondary font-18"><i class="mdi mdi-delete"></i> Eliminar</button>
+                            <button id="reasign_btn" type="button" class="btn btn-secondary font-18"><i class="ti-share-alt"></i> Reasignar</button>
+                            {%if tray=="inbox"%}
+                            <button id="inform_btn" type="button" class="btn btn-secondary font-18"><i class="mdi mdi-information-outline"></i> Informar</button>
+                            {%endif%}
+                            <button id="archive_btn" type="button" class="btn btn-secondary font-18"><i class="mdi mdi-archive"></i> Archivar</button>
+                            <button type="button" class="btn btn-secondary font-18"><i class="mdi mdi-reload"></i> Refrescar</button>
+                        </div>
+                    </div>
+                    <!-- End Tools -->
+                    <div class="card-body">
+                        <div class="table-responsive m-t-40" style="margin-top: 0px;">
+                            <table id="example23" class="table color-table success-table table-hover table-striped" cellspacing="0" width="100%">
+                                <thead>
+                                    <tr>
+                                        <th></th>
+                                        <th></th>
+                                        <th>De</th>
+                                        <th>Asunto</th>
+                                        <th>Fecha</th>
+                                        <th>N&uacute;mero de Documento</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {%for document in documents%}
+                                    <tr id="row_{{document.id}}">
+                                        <td><input type="checkbox" id="to_delete_chk" name="to_delete_chk" value="{{document.id}}" /></td>
+                                        <td><i class="ti-layers"></i></td>
+                                        {%if tray=="ellaboration"%}
+                                        <td>{{document.user.name}} {{document.user.lastname}}</td>
+                                        <td><a href="{{path('get_document',{'documentId':document.id})}}">{{document.subject}}</a></td>
+                                        {%else%}
+                                        <td>{{document.document.user.name}} {{document.document.user.lastname}}</td>
+                                        <td><a href="{{path('show_saved_document',{'documentId':document.document.id,'trayId':1})}}">{{document.document.subject}}</a></td>
+                                        {%endif%}
+                                        <td>
+                                        {{ document.generatedday|date('Y-m-d') }}
+                                        <br />
+                                        {{ document.generatedday|date('H:i:s') }}
+                                        </td>
+                                        <td>
+                                        #
+                                        </td>
+                                    </tr>
+                                    {%endfor%}
+
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+</div>
+
+
+<div class="modal fade" id="confirm_deletion_modal" tabindex="-1" role="dialog" aria-labelledby="DeletionConfirm">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="exampleModalLabel1">Confirmaci&oacute;n!</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            </div>
+            <div class="modal-body">
+                Est&aacute; seguro que desea eliminar los elementos seleccionados?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="confirm_deletion_btn">Confirmar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% include 'DocumentBundle:PartialView:modal_reasignation.html.twig'%}
+{% include 'DocumentBundle:PartialView:modal_archive.html.twig'%}
+
+{%endblock%}

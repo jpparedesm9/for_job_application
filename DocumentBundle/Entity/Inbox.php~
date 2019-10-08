@@ -1,0 +1,41 @@
+<?php
+
+namespace DocumentBundle\Entity;
+
+use Doctrine\ORM\Mapping as ORM;
+
+/**
+ * Inbox
+ *
+ * @ORM\Table(name="inbox")
+ * @ORM\Entity(repositoryClass="DocumentBundle\Repository\InboxRepository")
+ */
+class Inbox
+{
+    /**
+     * @var int
+     *
+     * @ORM\Column(name="id", type="integer")
+     * @ORM\Id
+     * @ORM\GeneratedValue(strategy="AUTO")
+     */
+    private $id;
+
+    /**
+    * @ORM\ManyToOne(targetEntity="SiteConfigurationBundle\Entity\User")
+    */
+    private $user;
+
+    /**
+    * @ORM\ManyToOne(targetEntity="DocumentBundle\Entity\Document")
+    */
+    private $document;
+
+    /**
+     * @var \DateTime
+     *
+     * @ORM\Column(name="generated_day", type="datetime")
+     */
+    private $generatedDay;
+
+}
